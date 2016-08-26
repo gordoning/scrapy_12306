@@ -9,6 +9,9 @@ import pymysql.cursors
 from scrapy_12306.items import AgencyItem
 from scrapy_12306.items import CommitItem
 from scrapy_12306.items import StationItem
+from scrapy_12306.items import StationTelecodeItem
+from scrapy_12306.items import TrainItem
+
 
 class Scrapy12306Pipeline(object):
 
@@ -20,6 +23,8 @@ class Scrapy12306Pipeline(object):
         # print self.cursor.fetchone()
         self.insert_agency_sql = "insert ignore agency_sellticket(agency_name,province,city,county,agency_adress,start_time_am,stop_time_am,start_time_pm,stop_time_pm) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         self.insert_stations_sql = "insert ignore stations VALUES(%s,%s,%s,%s,%s,%s,%s)"
+        self.insert_telecode_sql = "insert ignore station_telecodes VALUES(%s,%s)"
+        self.insert_train_sql = "insert ignore trains VALUES(%s,%s,%s,%s)"
 
     def process_item(self, item, spider):
         if isinstance(item,CommitItem):
@@ -40,7 +45,6 @@ class Scrapy12306Pipeline(object):
                                         ))
 
         elif isinstance(item,StationItem):
-            print item['station_address']
             #将代售点的详细信息，插入到数据库中
             sta = self.cursor.execute(self.insert_stations_sql,\
                                       (item['bureau'],\
@@ -50,6 +54,22 @@ class Scrapy12306Pipeline(object):
                                         item['service_stop'],\
                                         item['service_baggage'],\
                                         item['service_package']\
+                                        ))
+
+        elif isinstance(item,StationTelecodeItem):
+            #将车站名称和车站编码，存入数据库
+            sta = self.cursor.execute(self.insert_telecode_sql,\
+                                      (item['station_name'],\
+                                        item['station_telecode']\
+                                        ))
+
+        elif isinstance(item,TrainItem):
+            #将车站名称和车站编码，存入数据库
+            sta = self.cursor.execute(self.insert_train_sql,\
+                                      (item['train_code'],\
+                                        item['train_no'],\
+                                        item['start_station_name'],\
+                                        item['end_station_name'],\
                                         ))
 
         return item

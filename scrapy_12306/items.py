@@ -31,6 +31,18 @@ class StationItem(scrapy.Item):
     service_baggage = scrapy.Field()  # 办理：行李
     service_package = scrapy.Field()  # 办理：包裹
 
+# 车站的编码
+class StationTelecodeItem(scrapy.Item):
+    station_name = scrapy.Field()   #站点名称
+    station_telecode = scrapy.Field()   #站点编码
+
+# 车次
+class TrainItem(scrapy.Item):
+    train_code = scrapy.Field()   #车次
+    train_no = scrapy.Field()   #车次编码
+    start_station_name = scrapy.Field()   #起点
+    end_station_name = scrapy.Field()   #终点
+
 # 数据库提交
 class CommitItem(scrapy.Item):
     pass
