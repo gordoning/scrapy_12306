@@ -27,7 +27,7 @@ class AgencySellticketSpider(scrapy.Spider):
             url = "https://kyfw.12306.cn/otn/queryAgencySellTicket/queryAgentSellCity?"
             province_name_url = urllib.urlencode({"province":province_name.encode('utf-8')})
             citys_url = url + province_name_url
-            return scrapy.Request(citys_url,headers=self.headers,meta= {'province':province_name},callback=self.country_parse)
+            yield scrapy.Request(citys_url,headers=self.headers,meta= {'province':province_name},callback=self.country_parse)
 
 
     def country_parse(self,response):
@@ -42,7 +42,7 @@ class AgencySellticketSpider(scrapy.Spider):
                                                  'city':city_name.encode('utf-8')})
             city_url = url + city_name_url
 
-            return scrapy.Request(city_url, headers=self.headers, \
+            yield scrapy.Request(city_url, headers=self.headers, \
                                  meta={'province':response.meta['province'],'city':city_name},\
                                  callback=self.agency_parse)
 
@@ -58,9 +58,9 @@ class AgencySellticketSpider(scrapy.Spider):
                                                 'city':response.meta['city'].encode('utf-8'),\
                                                  'county':county_name.encode('utf-8')})
             county_url = url + county_name_url
-            print '@@@@@@@@@@@@@@@@@'*5+county_url
+            # print '@@@@@@@@@@@@@@@@@'*5+county_url
 
-            return scrapy.Request(county_url, headers=self.headers, \
+            yield scrapy.Request(county_url, headers=self.headers, \
                                  meta={'province':response.meta['province'],'city':response.meta['city'], 'county':county_name},\
                                  callback=self.agency_detail_parse)
 
