@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+'''
+爬取所有代售点的信息，包括省份，城市，地区，代售点名称，地址, 营业时间等
+'''
+
 import scrapy
 import json
 import urllib
@@ -12,10 +17,23 @@ class AgencySellticketSpider(scrapy.Spider):
         'http://www.https://kyfw.12306.cn/otn/queryAgencySellTicket/init/',
     )
 
+    # 开启功能：中间件和过滤设置
+    custom_settings = {
+        # 'DUPEFILTER_DEBUG': True,
+        'DOWNLOADER_MIDDLEWARES':{
+            'scrapy_12306.middlewares.DownLoaderMiddleware': 500,
+        },
+        'DUPEFILTER_CLASS':"scrapy_12306.filter.URLTurnFilter",
+        'JOBDIR':'stop-break/agency',
+    }
+
+    def __init__(self,*a,**kw):
+        super(AgencySellticketSpider,self).__init__(self.name,**kw)
+        self.turn = a[0]
+
     def start_requests(self):
         self.headers =  {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-        # self.cookie = {'bid':'ID7V121y-F8', 'll':"118163", 'ct':'y', '_pk_id.100001.4cf6':'2e0009b8aa8bc2e2.1470575800.5.1470657979.1470650297.', 'ap':'1'}
-        yield scrapy.Request('https://kyfw.12306.cn/otn/userCommon/allProvince', headers= self.headers, callback=self.city_parse)
+        yield scrapy.Request('https://kyfw.12306.cn/otn/userCommon/allProvince',meta={'turn':self.turn}, headers= self.headers, callback=self.city_parse)
 
     def city_parse(self, response):
 
@@ -27,7 +45,7 @@ class AgencySellticketSpider(scrapy.Spider):
             url = "https://kyfw.12306.cn/otn/queryAgencySellTicket/queryAgentSellCity?"
             province_name_url = urllib.urlencode({"province":province_name.encode('utf-8')})
             citys_url = url + province_name_url
-            yield scrapy.Request(citys_url,headers=self.headers,meta= {'province':province_name},callback=self.country_parse)
+            return scrapy.Request(citys_url,headers=self.headers,meta= {'province':province_name,'turn':self.turn},callback=self.country_parse)
 
 
     def country_parse(self,response):
@@ -42,8 +60,8 @@ class AgencySellticketSpider(scrapy.Spider):
                                                  'city':city_name.encode('utf-8')})
             city_url = url + city_name_url
 
-            yield scrapy.Request(city_url, headers=self.headers, \
-                                 meta={'province':response.meta['province'],'city':city_name},\
+            return scrapy.Request(city_url, headers=self.headers, \
+                                 meta={'province':response.meta['province'],'city':city_name,'turn':self.turn},\
                                  callback=self.agency_parse)
 
     def agency_parse(self,response):
@@ -60,11 +78,12 @@ class AgencySellticketSpider(scrapy.Spider):
             county_url = url + county_name_url
             # print '@@@@@@@@@@@@@@@@@'*5+county_url
 
-            yield scrapy.Request(county_url, headers=self.headers, \
-                                 meta={'province':response.meta['province'],'city':response.meta['city'], 'county':county_name},\
+            return scrapy.Request(county_url, headers=self.headers, \
+                                 meta={'province':response.meta['province'],'city':response.meta['city'], 'county':county_name, 'turn':self.turn},\
                                  callback=self.agency_detail_parse)
 
     def agency_detail_parse(self,response):
+
         agencies = json.loads(response.body)['data']['datas']
         for agency in agencies:
             agency_item = AgencyItem()
@@ -77,6 +96,8 @@ class AgencySellticketSpider(scrapy.Spider):
             agency_item['stop_time_am'] = agency['stop_time_am']
             agency_item['start_time_pm'] = agency['start_time_pm']
             agency_item['stop_time_pm'] = agency['stop_time_pm']
-            # print agency_item
+            agency_item['turn_id'] = self.turn
+            print self.turn
             yield agency_item
+
         yield CommitItem()

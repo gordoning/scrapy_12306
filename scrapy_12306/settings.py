@@ -90,5 +90,5 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-DUPEFILTER_DEBUG = True
+# DUPEFILTER_DEBUG = True
 

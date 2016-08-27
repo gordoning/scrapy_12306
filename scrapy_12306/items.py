@@ -20,6 +20,8 @@ class AgencyItem(scrapy.Item):
     stop_time_am = scrapy.Field()   #  结束营业时间，上午
     start_time_pm = scrapy.Field()  # 开始营业时间，下午
     stop_time_pm = scrapy.Field()   # 结束营业时间，下午
+    turn_id = scrapy.Field()  # 更新的标示，代表了某一次的更新
+
 
 # 车站
 class StationItem(scrapy.Item):
@@ -30,11 +32,15 @@ class StationItem(scrapy.Item):
     service_stop = scrapy.Field()  # 乘客乘降
     service_baggage = scrapy.Field()  # 办理：行李
     service_package = scrapy.Field()  # 办理：包裹
+    turn_id = scrapy.Field()   #更新的标示，代表了某一次的更新
+
 
 # 车站的编码
 class StationTelecodeItem(scrapy.Item):
     station_name = scrapy.Field()   #站点名称
     station_telecode = scrapy.Field()   #站点编码
+    turn_id = scrapy.Field()  # 更新的标示，代表了某一次的更新
+
 
 # 车次
 class TrainItem(scrapy.Item):
@@ -42,6 +48,7 @@ class TrainItem(scrapy.Item):
     train_no = scrapy.Field()   #车次编码
     start_station_name = scrapy.Field()   #起点
     end_station_name = scrapy.Field()   #终点
+    turn_id = scrapy.Field()   #更新的标示，代表了某一次的更新
 
 # 车次时刻表
 class TrainTimeItem(scrapy.Item):

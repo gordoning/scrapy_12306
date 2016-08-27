@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+'''
+爬虫：所有车站的信息，包括车站名称，办理包裹，办理行李等信息
+'''
+
 import scrapy
 import json
 import urllib
@@ -7,12 +12,26 @@ from scrapy_12306.items import StationItem
 from scrapy_12306.items import CommitItem
 
 
-
 class ScrapyStationsSpider(scrapy.Spider):
-    name = "scrapy_stations"
+    name = "stations"
     start_urls = (
         'http://www.12306.cn/mormhweb/kyyyz/',
     )
+
+    # 开启功能：中间件和过滤设置
+    custom_settings = {
+        # 'DUPEFILTER_DEBUG': True,
+        'DOWNLOADER_MIDDLEWARES':{
+            'scrapy_12306.middlewares.DownLoaderMiddleware': 500,
+        },
+        'DUPEFILTER_CLASS':"scrapy_12306.filter.URLTurnFilter",
+        'JOBDIR': 'stop-break/stations',
+    }
+
+    def __init__(self,*a,**kw):
+        super(ScrapyStationsSpider,self).__init__(self.name,**kw)
+        self.turn = a[0]
+
 
     # 获取所有的铁路局，并发起请求：车站详情和乘降所的详情
     def parse(self, response):
@@ -30,11 +49,11 @@ class ScrapyStationsSpider(scrapy.Spider):
             bereau_url1 = 'http://www.12306.cn/mormhweb/kyyyz' + bereau_urls[i*2]['href'][1:]  # 每一个铁路局下的车站地址
             bereau_url2 = 'http://www.12306.cn/mormhweb/kyyyz' + bereau_urls[i*2 + 1]['href'][1:]  # 每一个铁路局下的乘降所地址
 
-            yield scrapy.Request(bereau_url1, headers=self.headers, meta= {'bereau':bereaus[i].text, 'is_stop_point':0},
+            return scrapy.Request(bereau_url1, headers=self.headers, meta= {'bereau':bereaus[i].text, 'is_stop_point':0},
                            callback=self.station_parse)
-            yield scrapy.Request(bereau_url2, headers=self.headers,
-                                  meta={'bereau': bereaus[i].text, 'is_stop_point': 1},
-                                  callback=self.station_parse)
+            # yield scrapy.Request(bereau_url2, headers=self.headers,
+            #                       meta={'bereau': bereaus[i].text, 'is_stop_point': 1},
+            #                       callback=self.station_parse)
 
 
     def station_parse(self, response):
@@ -64,6 +83,8 @@ class ScrapyStationsSpider(scrapy.Spider):
                 station_item['service_package'] = 1
             else:
                 station_item['service_package'] = 0
+
+            station_item['turn_id'] = self.turn
 
             yield station_item
 

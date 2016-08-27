@@ -23,10 +23,10 @@ class Scrapy12306Pipeline(object):
         self.cursor = self.conn.cursor()
         # self.cursor.execute('select * from agency_sellticket')
         # print self.cursor.fetchone()
-        self.insert_agency_sql = "insert ignore agency_sellticket(agency_name,province,city,county,agency_adress,start_time_am,stop_time_am,start_time_pm,stop_time_pm) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        self.insert_stations_sql = "insert ignore stations VALUES(%s,%s,%s,%s,%s,%s,%s)"
-        self.insert_telecode_sql = "insert ignore station_telecodes VALUES(%s,%s)"
-        self.insert_train_sql = "insert ignore trains VALUES(%s,%s,%s,%s)"
+        self.insert_agency_sql = "insert ignore agency_sellticket values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        self.insert_stations_sql = "insert ignore stations VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+        self.insert_telecode_sql = "insert ignore station_telecodes VALUES(%s,%s,%s)"
+        self.insert_train_sql = "insert ignore trains VALUES(%s,%s,%s,%s,%s)"
         self.insert_train_time_sql = "insert ignore train_time VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
         self.insert_turn_sql = "insert ignore turns VALUES(%s,%s)"
 
@@ -45,8 +45,9 @@ class Scrapy12306Pipeline(object):
                                         item['start_time_am'],\
                                         item['stop_time_am'],\
                                         item['start_time_pm'],\
-                                        item['stop_time_pm']\
-                                        ))
+                                        item['stop_time_pm'], \
+                                        item['turn_id'] \
+                                       ))
 
         elif isinstance(item,StationItem):
             #将代售点的详细信息，插入到数据库中
@@ -57,27 +58,30 @@ class Scrapy12306Pipeline(object):
                                         item['station_address'],\
                                         item['service_stop'],\
                                         item['service_baggage'],\
-                                        item['service_package']\
-                                        ))
+                                        item['service_package'], \
+                                        item['turn_id'] \
+                                       ))
 
         elif isinstance(item,StationTelecodeItem):
             #将车站名称和车站编码，存入数据库
             sta = self.cursor.execute(self.insert_telecode_sql,\
                                       (item['station_name'],\
-                                        item['station_telecode']\
-                                        ))
+                                        item['station_telecode'], \
+                                        item['turn_id'] \
+                                       ))
 
         elif isinstance(item,TrainItem):
-            #将车站名称和车站编码，存入数据库
+            #将车次/车次编码/起点/终点，存入数据库
             sta = self.cursor.execute(self.insert_train_sql,\
                                       (item['train_code'],\
                                         item['train_no'],\
                                         item['start_station_name'],\
-                                        item['end_station_name'],\
-                                        ))
+                                        item['end_station_name'], \
+                                        item['turn_id'] \
+                                       ))
 
         elif isinstance(item,TrainTimeItem):
-            #将车站名称和车站编码，存入数据库
+            #将车次的详细时刻表，存入数据库
             sta = self.cursor.execute(self.insert_train_time_sql,\
                                       (item['train_code'],\
                                         item['train_no'],\
@@ -89,12 +93,7 @@ class Scrapy12306Pipeline(object):
                                         item['turn_id']\
                                         ))
 
-        elif isinstance(item,TurnItem):
-            #将车站名称和车站编码，存入数据库
-            sta = self.cursor.execute(self.insert_turn_sql,\
-                                      (item['turn_id'],\
-                                        item['mark_time']\
-                                        ))
+
 
 
         return item
