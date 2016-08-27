@@ -43,6 +43,22 @@ class TrainItem(scrapy.Item):
     start_station_name = scrapy.Field()   #起点
     end_station_name = scrapy.Field()   #终点
 
+# 车次时刻表
+class TrainTimeItem(scrapy.Item):
+    train_code = scrapy.Field()   #车站名称
+    train_no = scrapy.Field()   #车站名称
+    station_name = scrapy.Field()   #车站名称
+    arrive_time = scrapy.Field()   #到达时间
+    start_time = scrapy.Field()   #开车时间
+    station_no = scrapy.Field()   #车站序号
+    stopover_time = scrapy.Field()   #停留时间
+    turn_id = scrapy.Field()   #更新的标示，代表了某一次的更新
+
+# 更新的时间
+class TurnItem(scrapy.Item):
+    turn_id = scrapy.Field()
+    mark_time = scrapy.Field()  # 时间戳
+
 # 数据库提交
 class CommitItem(scrapy.Item):
     pass

@@ -11,6 +11,8 @@ from scrapy_12306.items import CommitItem
 from scrapy_12306.items import StationItem
 from scrapy_12306.items import StationTelecodeItem
 from scrapy_12306.items import TrainItem
+from scrapy_12306.items import TrainTimeItem
+from scrapy_12306.items import TurnItem
 
 
 class Scrapy12306Pipeline(object):
@@ -25,6 +27,8 @@ class Scrapy12306Pipeline(object):
         self.insert_stations_sql = "insert ignore stations VALUES(%s,%s,%s,%s,%s,%s,%s)"
         self.insert_telecode_sql = "insert ignore station_telecodes VALUES(%s,%s)"
         self.insert_train_sql = "insert ignore trains VALUES(%s,%s,%s,%s)"
+        self.insert_train_time_sql = "insert ignore train_time VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+        self.insert_turn_sql = "insert ignore turns VALUES(%s,%s)"
 
     def process_item(self, item, spider):
         if isinstance(item,CommitItem):
@@ -71,5 +75,26 @@ class Scrapy12306Pipeline(object):
                                         item['start_station_name'],\
                                         item['end_station_name'],\
                                         ))
+
+        elif isinstance(item,TrainTimeItem):
+            #将车站名称和车站编码，存入数据库
+            sta = self.cursor.execute(self.insert_train_time_sql,\
+                                      (item['train_code'],\
+                                        item['train_no'],\
+                                        item['station_name'],\
+                                        item['arrive_time'],\
+                                        item['start_time'],\
+                                        item['station_no'],\
+                                        item['stopover_time'],\
+                                        item['turn_id']\
+                                        ))
+
+        elif isinstance(item,TurnItem):
+            #将车站名称和车站编码，存入数据库
+            sta = self.cursor.execute(self.insert_turn_sql,\
+                                      (item['turn_id'],\
+                                        item['mark_time']\
+                                        ))
+
 
         return item
