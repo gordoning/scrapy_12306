@@ -49,13 +49,16 @@ class ScrapyStationsSpider(scrapy.Spider):
             bereau_url1 = 'http://www.12306.cn/mormhweb/kyyyz' + bereau_urls[i*2]['href'][1:]  # 每一个铁路局下的车站地址
             bereau_url2 = 'http://www.12306.cn/mormhweb/kyyyz' + bereau_urls[i*2 + 1]['href'][1:]  # 每一个铁路局下的乘降所地址
 
-            return scrapy.Request(bereau_url1, headers=self.headers, meta= {'bereau':bereaus[i].text, 'is_stop_point':0},
-                           callback=self.station_parse)
-            # yield scrapy.Request(bereau_url2, headers=self.headers,
-            #                       meta={'bereau': bereaus[i].text, 'is_stop_point': 1},
-            #                       callback=self.station_parse)
+            yield scrapy.Request(bereau_url1,
+                                 headers=self.headers,
+                                 meta= {'bereau':bereaus[i].text, 'is_stop_point':0, 'turn':self.turn},
+                                 callback=self.station_parse)
+            yield scrapy.Request(bereau_url2,
+                                 headers=self.headers,
+                                 meta={'bereau': bereaus[i].text, 'is_stop_point': 1, 'turn':self.turn},
+                                 callback=self.station_parse)
 
-
+    # 获取每个站点的详细信息
     def station_parse(self, response):
         soup = BeautifulSoup(response.body, 'lxml')
         stations = soup.select('table table tr')
@@ -83,7 +86,6 @@ class ScrapyStationsSpider(scrapy.Spider):
                 station_item['service_package'] = 1
             else:
                 station_item['service_package'] = 0
-
             station_item['turn_id'] = self.turn
 
             yield station_item

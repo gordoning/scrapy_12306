@@ -36,6 +36,8 @@ class StationTelecodesSpider(scrapy.Spider):
 
         # 抽取站点的名字和telecode
         for station in stations:
+
+            # 排除没有车站的data元素
             if '|' not in station:
                 continue
 

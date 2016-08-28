@@ -1,14 +1,22 @@
 # coding:utf-8
 
+'''
+这是个启动脚本：一次性启动多个Spider
+'''
+
+
 import os
 import sys
 import time
 import datetime
 import pymysql
 
+
+# 设置项目的路径，__file__是指当前所在的路径
 project_path = os.path.dirname(os.path.abspath(__file__+'/..'))
 sys.path.insert(0,project_path)
 
+# 导入这个
 from spiders.agency_sellticket import AgencySellticketSpider
 from spiders.station_telecode import StationTelecodesSpider
 from spiders.stations import ScrapyStationsSpider
@@ -22,17 +30,11 @@ from scrapy.settings import Settings
 from scrapy.utils.project import get_project_settings
 from scrapy.utils import defer
 
-
-
 # 设置爬虫启动配置
 settings = get_project_settings()
 crawler = CrawlerProcess(settings)
 
-
-
-
-
-# 按顺序执行每一个spider
+# 构造爬虫的初始化工作，按顺序执行每一个spider
 @defer.defer.inlineCallbacks
 def crawl():
 
@@ -51,6 +53,7 @@ def crawl():
     conn.commit()
     conn.close()
 
+    # 按顺序执行每一个Spider
     yield crawler.crawl(AgencySellticketSpider,turn)
     yield crawler.crawl(StationTelecodesSpider,turn)
     yield crawler.crawl(ScrapyStationsSpider,turn)

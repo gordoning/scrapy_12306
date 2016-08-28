@@ -7,11 +7,10 @@
 
 from scrapy.dupefilters import RFPDupeFilter
 
-
+# 时间标示turn变化的话，返回的指纹信息就会变化，这就意味着：这个url会重新爬去
 class URLTurnFilter(RFPDupeFilter):
     def request_fingerprint(self,request):
         if 'turn' in request.meta:
-            # print '断点旭川断点旭川'*10
             return request.url + ("--%d"%request.meta['turn'])
         else:
             return request.url
